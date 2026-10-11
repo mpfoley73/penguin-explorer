@@ -1,0 +1,63 @@
+---
+title: "Exploratory Data Analysis"
+format:
+  html:
+    code-fold: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(palmerpenguins)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+#| include: false
+
+df <- palmerpenguins::penguins
+
+summary(df)
+```
+
+The dataset contains 344 penguins from three species observed between 2007 and 2009. Most measurement variables have two missing values, while sex has 11; this missingness should be considered before modeling or comparing groups.
+
+```{r}
+df |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  tidyr::pivot_longer(
+    everything(),
+    names_to = "variable",
+    values_to = "missing_values"
+  )
+```
+
+```{r}
+#| include: false
+
+plot_df <- df |>
+  filter(!is.na(bill_length_mm), !is.na(body_mass_g))
+
+excluded_n <- nrow(df) - nrow(plot_df)
+```
+
+The plot excludes `r excluded_n` penguins with missing values for bill length, or body mass.
+
+```{r}
+plot_df |>
+  ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = "y ~ x") +
+  labs(
+    title = "Penguin Bill Length vs Body Mass",
+    x = "Bill Length (mm)",
+    y = "Body Mass (g)",
+    color = "Species"
+  ) +
+  theme_minimal()
+```
+
+Across all penguins, longer bills are generally associated with greater body mass, but the species form distinct clusters. All three species show positive fitted slopes, with Gentoo’s steepest; the overall pattern partly reflects both within-species association and differences among species.

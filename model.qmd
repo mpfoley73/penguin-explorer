@@ -1,0 +1,57 @@
+---
+title: "Model"
+format:
+  html:
+    code-fold: show
+---
+
+```{python}
+import palmerpenguins
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+```
+
+## Get Data
+
+Load the Palmer Penguins data and retain observations with complete values for the model outcome and predictors.
+
+```{python}
+df = palmerpenguins.load_penguins()
+
+model_columns = [
+    "bill_length_mm",
+    "species",
+    "sex",
+    "body_mass_g",
+]
+
+model_df = df.dropna(subset=model_columns)
+retained_n = len(model_df)
+excluded_n = len(df) - len(model_df)
+```
+
+The model retains `{python} retained_n` of `{python} len(df)` observations and
+excludes `{python} excluded_n` observations with missing values in the model
+outcome or predictors.
+
+## Define Model and Fit
+
+Fit a linear regression predicting body mass from bill length, species, and sex. Categorical predictors are converted to indicator variables.
+
+```{python}
+X = pd.get_dummies(model_df[["bill_length_mm", "species", "sex"]], drop_first=True)
+y = model_df["body_mass_g"]
+
+model = LinearRegression().fit(X, y)
+```
+
+## Model Evaluation
+
+The output provides basic checks that the model ran successfully. The reported R-square describes fit to the training data, not performance on new observations.
+
+```{python}
+print(f"Training R^2 {model.score(X, y)}")
+print(f"Intercept {model.intercept_}")
+print(f"Columns {X.columns}")
+print(f"Coefficients {model.coef_}")
+```

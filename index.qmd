@@ -1,0 +1,23 @@
+---
+title: "Penguin Explorer"
+---
+
+Explore the relationship between penguin bill length and body mass using the
+Palmer Penguins dataset.
+
+This is a learning project following Alex K. Gold's
+[DevOps for Data Science](https://do4ds.com/).
+
+## Chapter 1: Environments as Code
+
+The first chapter builds two analysis pages:
+
+- An exploratory analysis in R.
+- A model of penguin body mass in Python.
+
+Each language will use a project-specific package environment, with its
+dependencies recorded so that the environment can be restored later.
+
+Both analysis pages and their project-specific package environments are now in
+place. Our next step is to verify that the recorded environment files can
+restore the project reproducibly.

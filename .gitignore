@@ -48,3 +48,12 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Quarto generated website and local state
+/_site/
+/.quarto/
+
+# Python project-local package environment
+/.venv/
+__pycache__/
+*.pyc
