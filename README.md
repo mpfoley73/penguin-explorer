@@ -37,5 +37,18 @@ quarto render
 ```
 
 The R exploratory analysis and Python model now render successfully using their
-project-specific environments. The next step is to verify that the recorded
-environment files can restore the project reproducibly.
+project-specific environments.
+
+## Chapter 2: Deploying a Model
+
+The Chapter 2 lab is **complete**. The project now:
+
+1. Wraps the fitted penguin model and its input prototype in a Vetiver model.
+2. Stores and versions the model on a local Pins board.
+3. Reloads the saved model and checks that it can make a prediction.
+4. Defines a local Vetiver prediction API in `app.py`.
+
+This separates the trained model from the analysis document so it can be loaded
+and served independently. The model artifact remains outside the repository;
+the code and Python package record needed to reproduce the workflow belong in
+Git.

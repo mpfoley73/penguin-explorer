@@ -9,6 +9,9 @@ format:
 import palmerpenguins
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from vetiver import VetiverModel
+from vetiver import vetiver_pin_write
+from pins import board_folder
 ```
 
 ## Get Data
@@ -30,13 +33,11 @@ retained_n = len(model_df)
 excluded_n = len(df) - len(model_df)
 ```
 
-The model retains `{python} retained_n` of `{python} len(df)` observations and
-excludes `{python} excluded_n` observations with missing values in the model
-outcome or predictors.
+The model retains `{python} retained_n` of `{python} len(df)` observations and excludes `{python} excluded_n` observations with missing values in the model outcome or predictors.
 
 ## Define Model and Fit
 
-Fit a linear regression predicting body mass from bill length, species, and sex. Categorical predictors are converted to indicator variables.
+Fit a linear regression predicting body mass from bill length, species, and sex. Convert categorical predictors into indicator variables.
 
 ```{python}
 X = pd.get_dummies(model_df[["bill_length_mm", "species", "sex"]], drop_first=True)
@@ -45,13 +46,53 @@ y = model_df["body_mass_g"]
 model = LinearRegression().fit(X, y)
 ```
 
-## Model Evaluation
+## Evaluate Model
 
-The output provides basic checks that the model ran successfully. The reported R-square describes fit to the training data, not performance on new observations.
+Perform basic checks that the model ran successfully.
 
 ```{python}
 print(f"Training R^2 {model.score(X, y)}")
 print(f"Intercept {model.intercept_}")
 print(f"Columns {X.columns}")
 print(f"Coefficients {model.coef_}")
+```
+
+## Create a Vetiver Model
+
+Vetiver is Posit's opinionated framework for packaging and publishing models, creating prediction APIs, and monitoring model performance. The `VetiverModel` class wraps a model and its metadata, including a description and prototype data.
+
+```{python}
+v = VetiverModel(model, model_name="penguin_model", prototype_data=X)
+v.description
+v.prototype
+```
+
+## Store and Version the Model
+
+Store and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.
+
+```{python}
+model_folder = "C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model"
+model_board = board_folder(model_folder, allow_pickle_read=True)
+vetiver_pin_write(model_board, v)
+```
+
+## Check: Load Saved Model and Predict
+
+Test that the model can be loaded from the board in a new session. The model object and metadata are restored.
+
+```{python}
+loaded_v = VetiverModel.from_pin(model_board, "penguin_model")
+loaded_v.description
+
+new_penguin = pd.DataFrame(
+    {
+        "bill_length_mm": [39.1],
+        "species_Chinstrap": [False],
+        "species_Gentoo": [False],
+        "sex_male": [True],
+    }
+)
+
+loaded_v.model.predict(new_penguin)
 ```

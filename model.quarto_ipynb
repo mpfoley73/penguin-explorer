@@ -1,0 +1,197 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Model\"\n",
+        "format:\n",
+        "  html:\n",
+        "    code-fold: show\n",
+        "---"
+      ],
+      "id": "3fe2c1a6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import palmerpenguins\n",
+        "import pandas as pd\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "from vetiver import VetiverModel\n",
+        "from vetiver import vetiver_pin_write\n",
+        "from pins import board_folder"
+      ],
+      "id": "019aa993",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Get Data\n",
+        "\n",
+        "Load the Palmer Penguins data and retain observations with complete values for the model outcome and predictors.\n"
+      ],
+      "id": "4286405d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df = palmerpenguins.load_penguins()\n",
+        "\n",
+        "model_columns = [\n",
+        "    \"bill_length_mm\",\n",
+        "    \"species\",\n",
+        "    \"sex\",\n",
+        "    \"body_mass_g\",\n",
+        "]\n",
+        "\n",
+        "model_df = df.dropna(subset=model_columns)\n",
+        "retained_n = len(model_df)\n",
+        "excluded_n = len(df) - len(model_df)"
+      ],
+      "id": "6421b74c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The model retains `{python} retained_n` of `{python} len(df)` observations and excludes `{python} excluded_n` observations with missing values in the model outcome or predictors.\n",
+        "\n",
+        "## Define Model and Fit\n",
+        "\n",
+        "Fit a linear regression predicting body mass from bill length, species, and sex. Convert categorical predictors into indicator variables.\n"
+      ],
+      "id": "469b5a89"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "X = pd.get_dummies(model_df[[\"bill_length_mm\", \"species\", \"sex\"]], drop_first=True)\n",
+        "y = model_df[\"body_mass_g\"]\n",
+        "\n",
+        "model = LinearRegression().fit(X, y)"
+      ],
+      "id": "31d7336a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Evaluate Model\n",
+        "\n",
+        "Perform basic checks that the model ran successfully.\n"
+      ],
+      "id": "d7401d89"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(f\"Training R^2 {model.score(X, y)}\")\n",
+        "print(f\"Intercept {model.intercept_}\")\n",
+        "print(f\"Columns {X.columns}\")\n",
+        "print(f\"Coefficients {model.coef_}\")"
+      ],
+      "id": "bcb2c97a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Create a Vetiver Model\n",
+        "\n",
+        "Vetiver is Posit's opinionated framework for packaging and publishing models, creating prediction APIs, and monitoring model performance. The `VetiverModel` class wraps a model and its metadata, including a description and prototype data.\n"
+      ],
+      "id": "d78f70ed"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "v = VetiverModel(model, model_name=\"penguin_model\", prototype_data=X)\n",
+        "v.description\n",
+        "v.prototype"
+      ],
+      "id": "c08258d9",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Store and Version the Model\n",
+        "\n",
+        "Store and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.\n"
+      ],
+      "id": "3dde298f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model_folder = \"C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model\"\n",
+        "model_board = board_folder(model_folder, allow_pickle_read=True)\n",
+        "vetiver_pin_write(model_board, v)"
+      ],
+      "id": "b250a0d4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Check: Load Saved Model and Predict\n",
+        "\n",
+        "Test that the model can be loaded from the board in a new session. The model object and metadata are restored.\n"
+      ],
+      "id": "e41667f5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "loaded_v = VetiverModel.from_pin(model_board, \"penguin_model\")\n",
+        "loaded_v.description\n",
+        "\n",
+        "new_penguin = pd.DataFrame(\n",
+        "    {\n",
+        "        \"bill_length_mm\": [39.1],\n",
+        "        \"species_Chinstrap\": [False],\n",
+        "        \"species_Gentoo\": [False],\n",
+        "        \"sex_male\": [True],\n",
+        "    }\n",
+        ")\n",
+        "\n",
+        "loaded_v.model.predict(new_penguin)"
+      ],
+      "id": "ddeafea3",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "C:\\Users\\mpfol\\AppData\\Roaming\\Python\\share\\jupyter\\kernels\\python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
