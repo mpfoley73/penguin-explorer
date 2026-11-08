@@ -18,7 +18,9 @@ library(tidyr)
 ```{r}
 #| include: false
 
-df <- palmerpenguins::penguins
+con <- DBI::dbConnect(duckdb::duckdb(dbdir = "my-db.duckdb"))
+df <- DBI::dbReadTable(con, "penguins")
+DBI::dbDisconnect(con)
 
 summary(df)
 ```
@@ -27,7 +29,7 @@ The dataset contains 344 penguins from three species observed between 2007 and 2
 
 ```{r}
 df |>
-  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  dplyr::summarise(across(everything(), ~ sum(is.na(.)))) |>
   tidyr::pivot_longer(
     everything(),
     names_to = "variable",
@@ -48,16 +50,16 @@ The plot excludes `r excluded_n` penguins with missing values for bill length, o
 
 ```{r}
 plot_df |>
-  ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, formula = "y ~ x") +
-  labs(
+  ggplot2::ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_smooth(method = "lm", se = FALSE, formula = "y ~ x") +
+  ggplot2::labs(
     title = "Penguin Bill Length vs Body Mass",
     x = "Bill Length (mm)",
     y = "Body Mass (g)",
     color = "Species"
   ) +
-  theme_minimal()
+  ggplot2::theme_minimal()
 ```
 
 Across all penguins, longer bills are generally associated with greater body mass, but the species form distinct clusters. All three species show positive fitted slopes, with Gentoo’s steepest; the overall pattern partly reflects both within-species association and differences among species.

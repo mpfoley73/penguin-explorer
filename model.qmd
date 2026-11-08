@@ -6,12 +6,11 @@ format:
 ---
 
 ```{python}
-import palmerpenguins
+import duckdb
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from vetiver import VetiverModel
-from vetiver import vetiver_pin_write
 from pins import board_folder
+from sklearn.linear_model import LinearRegression
+from vetiver import VetiverModel, vetiver_pin_write
 ```
 
 ## Get Data
@@ -19,7 +18,9 @@ from pins import board_folder
 Load the Palmer Penguins data and retain observations with complete values for the model outcome and predictors.
 
 ```{python}
-df = palmerpenguins.load_penguins()
+con = duckdb.connect("my-db.duckdb")
+df = con.execute("SELECT * FROM penguins").fetchdf()
+con.close()
 
 model_columns = [
     "bill_length_mm",
@@ -63,8 +64,8 @@ Vetiver is Posit's opinionated framework for packaging and publishing models, cr
 
 ```{python}
 v = VetiverModel(model, model_name="penguin_model", prototype_data=X)
-v.description
-v.prototype
+print(v.description)
+print(v.prototype)
 ```
 
 ## Store and Version the Model
@@ -83,7 +84,7 @@ Test that the model can be loaded from the board in a new session. The model obj
 
 ```{python}
 loaded_v = VetiverModel.from_pin(model_board, "penguin_model")
-loaded_v.description
+print(loaded_v.description)
 
 new_penguin = pd.DataFrame(
     {

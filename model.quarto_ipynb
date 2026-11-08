@@ -11,20 +11,19 @@
         "    code-fold: show\n",
         "---"
       ],
-      "id": "3fe2c1a6"
+      "id": "c656a89e"
     },
     {
       "cell_type": "code",
       "metadata": {},
       "source": [
-        "import palmerpenguins\n",
+        "import duckdb\n",
         "import pandas as pd\n",
+        "from pins import board_folder\n",
         "from sklearn.linear_model import LinearRegression\n",
-        "from vetiver import VetiverModel\n",
-        "from vetiver import vetiver_pin_write\n",
-        "from pins import board_folder"
+        "from vetiver import VetiverModel, vetiver_pin_write"
       ],
-      "id": "019aa993",
+      "id": "58572daa",
       "execution_count": null,
       "outputs": []
     },
@@ -36,13 +35,15 @@
         "\n",
         "Load the Palmer Penguins data and retain observations with complete values for the model outcome and predictors.\n"
       ],
-      "id": "4286405d"
+      "id": "120d32b7"
     },
     {
       "cell_type": "code",
       "metadata": {},
       "source": [
-        "df = palmerpenguins.load_penguins()\n",
+        "con = duckdb.connect(\"my-db.duckdb\")\n",
+        "df = con.execute(\"SELECT * FROM penguins\").fetchdf()\n",
+        "con.close()\n",
         "\n",
         "model_columns = [\n",
         "    \"bill_length_mm\",\n",
@@ -55,7 +56,7 @@
         "retained_n = len(model_df)\n",
         "excluded_n = len(df) - len(model_df)"
       ],
-      "id": "6421b74c",
+      "id": "8a33c208",
       "execution_count": null,
       "outputs": []
     },
@@ -69,7 +70,7 @@
         "\n",
         "Fit a linear regression predicting body mass from bill length, species, and sex. Convert categorical predictors into indicator variables.\n"
       ],
-      "id": "469b5a89"
+      "id": "5d2a41ca"
     },
     {
       "cell_type": "code",
@@ -80,7 +81,7 @@
         "\n",
         "model = LinearRegression().fit(X, y)"
       ],
-      "id": "31d7336a",
+      "id": "eb9a50fb",
       "execution_count": null,
       "outputs": []
     },
@@ -92,7 +93,7 @@
         "\n",
         "Perform basic checks that the model ran successfully.\n"
       ],
-      "id": "d7401d89"
+      "id": "58f8abde"
     },
     {
       "cell_type": "code",
@@ -103,7 +104,7 @@
         "print(f\"Columns {X.columns}\")\n",
         "print(f\"Coefficients {model.coef_}\")"
       ],
-      "id": "bcb2c97a",
+      "id": "74a45465",
       "execution_count": null,
       "outputs": []
     },
@@ -115,17 +116,17 @@
         "\n",
         "Vetiver is Posit's opinionated framework for packaging and publishing models, creating prediction APIs, and monitoring model performance. The `VetiverModel` class wraps a model and its metadata, including a description and prototype data.\n"
       ],
-      "id": "d78f70ed"
+      "id": "4783dd0a"
     },
     {
       "cell_type": "code",
       "metadata": {},
       "source": [
         "v = VetiverModel(model, model_name=\"penguin_model\", prototype_data=X)\n",
-        "v.description\n",
-        "v.prototype"
+        "print(v.description)\n",
+        "print(v.prototype)"
       ],
-      "id": "c08258d9",
+      "id": "d6e48d28",
       "execution_count": null,
       "outputs": []
     },
@@ -137,7 +138,7 @@
         "\n",
         "Store and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.\n"
       ],
-      "id": "3dde298f"
+      "id": "85d8d5cf"
     },
     {
       "cell_type": "code",
@@ -147,7 +148,7 @@
         "model_board = board_folder(model_folder, allow_pickle_read=True)\n",
         "vetiver_pin_write(model_board, v)"
       ],
-      "id": "b250a0d4",
+      "id": "286a9dfe",
       "execution_count": null,
       "outputs": []
     },
@@ -159,14 +160,14 @@
         "\n",
         "Test that the model can be loaded from the board in a new session. The model object and metadata are restored.\n"
       ],
-      "id": "e41667f5"
+      "id": "2a1b9038"
     },
     {
       "cell_type": "code",
       "metadata": {},
       "source": [
         "loaded_v = VetiverModel.from_pin(model_board, \"penguin_model\")\n",
-        "loaded_v.description\n",
+        "print(loaded_v.description)\n",
         "\n",
         "new_penguin = pd.DataFrame(\n",
         "    {\n",
@@ -179,7 +180,7 @@
         "\n",
         "loaded_v.model.predict(new_penguin)"
       ],
-      "id": "ddeafea3",
+      "id": "e3bb671c",
       "execution_count": null,
       "outputs": []
     }

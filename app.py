@@ -1,6 +1,5 @@
 from pins import board_folder
-from vetiver import VetiverModel
-from vetiver import VetiverAPI
+from vetiver import VetiverAPI, VetiverModel
 
 # Load the model created in `model.qmd`.
 model_folder = "C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model"
