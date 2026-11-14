@@ -1,5 +1,12 @@
+import logging
 import requests
 from shiny import App, reactive, render, ui
+
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s %(message)s",
+    level=logging.INFO,
+)
+logging.info("Penguin interface started")
 
 app_ui = ui.page_fluid(
     ui.h2("Penguin mass explorer"),
@@ -37,12 +44,19 @@ def server(input, output, session):
             "sex_male": input.sex() == "Male",
         }
 
-        response = requests.post(
-            "http://127.0.0.1:8080/predict",
-            json=[penguin],
-        )
-        response.raise_for_status()
-        mass = response.json()["predict"][0]
+        logging.info("Requesting prediction")
+        logging.debug("Prediction inputs: %s", penguin)
+
+        try:
+            response = requests.post("http://127.0.0.1:8080/predict", json=[penguin],)
+            response.raise_for_status()
+            mass = response.json()["predict"][0]
+        except requests.exceptions.RequestException:
+            logging.exception("Prediction request failed")
+            return "Could not get a prediction. Please try again later."
+
+        logging.debug("Predicted body mass: %s", mass)
+        logging.info("Prediction received successfully")
 
         return f"Predicted body mass: {mass:,.0f} grams"
 
