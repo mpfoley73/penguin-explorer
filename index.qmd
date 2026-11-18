@@ -8,16 +8,19 @@ Palmer Penguins dataset.
 This is a learning project following Alex K. Gold's
 [DevOps for Data Science](https://do4ds.com/).
 
-## Chapter 1: Environments as Code
+## Current progress
 
-The first chapter builds two analysis pages:
+The local labs for Chapters 1 through 4 are complete:
 
-- An exploratory analysis in R.
-- A model of penguin body mass in Python.
+- R and Python use project-specific environments with recorded dependencies.
+- The EDA and model reports read a shared DuckDB database.
+- A saved model is served through a local Vetiver prediction API.
+- A Shiny interface requests predictions and logs successes, diagnostic details,
+  and request failures.
 
-Each language will use a project-specific package environment, with its
-dependencies recorded so that the environment can be restored later.
+Use the navigation to explore the R EDA and Python model reports. The interactive
+prediction interface requires the separate Shiny and API servers to be running;
+startup commands and project progress are documented in the repository README.
 
-Both analysis pages and their project-specific package environments are now in
-place. Our next step is to verify that the recorded environment files can
-restore the project reproducibly.
+Rebuilding and publishing this Quarto website through GitHub Actions is the next
+chapter's task.

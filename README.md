@@ -105,3 +105,41 @@ quarto render model.qmd
 ```
 
 Rendering `model.qmd` also fits and saves the model to the local Pins board.
+
+## Chapter 4: Logging and Monitoring
+
+The local logging lab is **complete**. `penguin_ui/app.py` uses Python's
+standard-library `logging` module; no additional logging package is required.
+
+- INFO records interface startup, prediction requests, and successful results.
+- DEBUG records the encoded request inputs and predicted mass. The default
+  threshold is INFO, so these diagnostic messages are normally hidden.
+- ERROR records failed HTTP requests with a traceback using
+  `logging.exception()`. The browser displays a readable failure message.
+
+Logs go to stderr in the Shiny terminal, not to a persistent log file. To inspect
+inputs and predictions, temporarily change `level=logging.INFO` to
+`level=logging.DEBUG`, save, and repeat the request. Other libraries may also
+emit DEBUG messages. Restore INFO afterward. Avoid logging credentials or
+unnecessary personal information.
+
+### Checks completed locally
+
+1. Successful predictions produced request and success messages.
+2. Stopping the API caused an ERROR log and a readable browser message.
+3. Restarting the API restored predictions without restarting Shiny.
+4. Changing bill length changed both the DEBUG input record and predicted mass.
+
+Logging records events; exception handling lets the app recover from a failed
+request. A successful HTTP response demonstrates operational success, not
+prediction accuracy. Measuring accuracy over time would require actual masses
+matched to predictions. Centralized log storage, automated monitoring, and
+model-quality monitoring are not configured in this local lab.
+
+## Current local limitations
+
+The saved model board is configured with a machine-specific path in `app.py`
+and `model.qmd`. A fresh machine needs that location adapted and the model
+artifact recreated or made available. The Shiny client uses a local API URL.
+Chapter 5 will address rebuilding and publishing the Quarto reports; the live
+Shiny app and API require their own running processes.
