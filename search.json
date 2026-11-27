@@ -25,7 +25,7 @@
     "href": "model.html#evaluate-model",
     "title": "Model",
     "section": "Evaluate Model",
-    "text": "Evaluate Model\nPerform basic checks that the model ran successfully.\n\n\nCode\nprint(f\"Training R^2 {model.score(X, y)}\")\nprint(f\"Intercept {model.intercept_}\")\nprint(f\"Columns {X.columns}\")\nprint(f\"Coefficients {model.coef_}\")\n\n\nTraining R^2 0.8555368759537614\nIntercept 2169.2697209393973\nColumns Index(['bill_length_mm', 'species_Chinstrap', 'species_Gentoo', 'sex_male'], dtype='str')\nCoefficients [  32.53688677 -298.76553447 1094.86739145  547.36692408]"
+    "text": "Evaluate Model\nPerform basic checks that the model ran successfully.\n\n\nCode\nprint(f\"Training R^2 {model.score(X, y)}\")\nprint(f\"Intercept {model.intercept_}\")\nprint(f\"Columns {X.columns}\")\nprint(f\"Coefficients {model.coef_}\")\n\n\nTraining R^2 0.8555368759537614\nIntercept 2169.2697209393996\nColumns Index(['bill_length_mm', 'species_Chinstrap', 'species_Gentoo', 'sex_male'], dtype='str')\nCoefficients [  32.53688677 -298.76553447 1094.86739145  547.36692408]"
   },
   {
     "objectID": "model.html#create-a-vetiver-model",
@@ -39,7 +39,7 @@
     "href": "model.html#store-and-version-the-model",
     "title": "Model",
     "section": "Store and Version the Model",
-    "text": "Store and Version the Model\nStore and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.\n\n\nCode\nmodel_folder = os.getenv(\n    \"PENGUIN_MODEL_BOARD\",\n    \"C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model\",\n)\nmodel_board = board_folder(model_folder, allow_pickle_read=True)\nvetiver_pin_write(model_board, v)\n\n\nModel Cards provide a framework for transparent, responsible reporting. \n Use the vetiver `.qmd` Quarto template as a place to start, \n with vetiver.model_card()\n('The hash of pin \"penguin_model\" has not changed. Your pin will not be stored.',)"
+    "text": "Store and Version the Model\nStore and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.\n\n\nCode\nmodel_folder = os.getenv(\n    \"PENGUIN_MODEL_BOARD\",\n    \"C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model\",\n)\nmodel_board = board_folder(model_folder, allow_pickle_read=True)\nvetiver_pin_write(model_board, v)\n\n\nModel Cards provide a framework for transparent, responsible reporting. \n Use the vetiver `.qmd` Quarto template as a place to start, \n with vetiver.model_card()\nWriting pin:\nName: 'penguin_model'\nVersion: 20261127T123902Z-42702"
   },
   {
     "objectID": "model.html#check-load-saved-model-and-predict",
