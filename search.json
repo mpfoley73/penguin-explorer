@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "model.html",
+    "href": "model.html",
+    "title": "Model",
+    "section": "",
+    "text": "Code\nimport os\n\nimport duckdb\nimport pandas as pd\nfrom pins import board_folder\nfrom sklearn.linear_model import LinearRegression\nfrom vetiver import VetiverModel, vetiver_pin_write"
+  },
+  {
+    "objectID": "model.html#get-data",
+    "href": "model.html#get-data",
+    "title": "Model",
+    "section": "Get Data",
+    "text": "Get Data\nLoad the Palmer Penguins data and retain observations with complete values for the model outcome and predictors.\n\n\nCode\ncon = duckdb.connect(\"my-db.duckdb\")\ndf = con.execute(\"SELECT * FROM penguins\").fetchdf()\ncon.close()\n\nmodel_columns = [\n    \"bill_length_mm\",\n    \"species\",\n    \"sex\",\n    \"body_mass_g\",\n]\n\nmodel_df = df.dropna(subset=model_columns)\nretained_n = len(model_df)\nexcluded_n = len(df) - len(model_df)\n\n\nThe model retains 333 of 344 observations and excludes 11 observations with missing values in the model outcome or predictors."
+  },
+  {
+    "objectID": "model.html#define-model-and-fit",
+    "href": "model.html#define-model-and-fit",
+    "title": "Model",
+    "section": "Define Model and Fit",
+    "text": "Define Model and Fit\nFit a linear regression predicting body mass from bill length, species, and sex. Convert categorical predictors into indicator variables.\n\n\nCode\nX = pd.get_dummies(model_df[[\"bill_length_mm\", \"species\", \"sex\"]], drop_first=True)\ny = model_df[\"body_mass_g\"]\n\nmodel = LinearRegression().fit(X, y)"
+  },
+  {
+    "objectID": "model.html#evaluate-model",
+    "href": "model.html#evaluate-model",
+    "title": "Model",
+    "section": "Evaluate Model",
+    "text": "Evaluate Model\nPerform basic checks that the model ran successfully.\n\n\nCode\nprint(f\"Training R^2 {model.score(X, y)}\")\nprint(f\"Intercept {model.intercept_}\")\nprint(f\"Columns {X.columns}\")\nprint(f\"Coefficients {model.coef_}\")\n\n\nTraining R^2 0.8555368759537614\nIntercept 2169.2697209393973\nColumns Index(['bill_length_mm', 'species_Chinstrap', 'species_Gentoo', 'sex_male'], dtype='str')\nCoefficients [  32.53688677 -298.76553447 1094.86739145  547.36692408]"
+  },
+  {
+    "objectID": "model.html#create-a-vetiver-model",
+    "href": "model.html#create-a-vetiver-model",
+    "title": "Model",
+    "section": "Create a Vetiver Model",
+    "text": "Create a Vetiver Model\nVetiver is Posit’s opinionated framework for packaging and publishing models, creating prediction APIs, and monitoring model performance. The VetiverModel class wraps a model and its metadata, including a description and prototype data.\n\n\nCode\nv = VetiverModel(model, model_name=\"penguin_model\", prototype_data=X)\nprint(v.description)\nprint(v.prototype)\n\n\nA scikit-learn LinearRegression model\n&lt;class 'vetiver.types.prototype'&gt;"
+  },
+  {
+    "objectID": "model.html#store-and-version-the-model",
+    "href": "model.html#store-and-version-the-model",
+    "title": "Model",
+    "section": "Store and Version the Model",
+    "text": "Store and Version the Model\nStore and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.\n\n\nCode\nmodel_folder = os.getenv(\n    \"PENGUIN_MODEL_BOARD\",\n    \"C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model\",\n)\nmodel_board = board_folder(model_folder, allow_pickle_read=True)\nvetiver_pin_write(model_board, v)\n\n\nModel Cards provide a framework for transparent, responsible reporting. \n Use the vetiver `.qmd` Quarto template as a place to start, \n with vetiver.model_card()\n('The hash of pin \"penguin_model\" has not changed. Your pin will not be stored.',)"
+  },
+  {
+    "objectID": "model.html#check-load-saved-model-and-predict",
+    "href": "model.html#check-load-saved-model-and-predict",
+    "title": "Model",
+    "section": "Check: Load Saved Model and Predict",
+    "text": "Check: Load Saved Model and Predict\nTest that the model can be loaded from the board in a new session. The model object and metadata are restored.\n\n\nCode\nloaded_v = VetiverModel.from_pin(model_board, \"penguin_model\")\nprint(loaded_v.description)\n\nnew_penguin = pd.DataFrame(\n    {\n        \"bill_length_mm\": [39.1],\n        \"species_Chinstrap\": [False],\n        \"species_Gentoo\": [False],\n        \"sex_male\": [True],\n    }\n)\n\nloaded_v.model.predict(new_penguin)\n\n\nA scikit-learn LinearRegression model\n\n\narray([3988.82891777])"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Penguin Explorer",
+    "section": "",
+    "text": "Explore the relationship between penguin bill length and body mass using the Palmer Penguins dataset.\nThis is a learning project following Alex K. Gold’s DevOps for Data Science."
+  },
+  {
+    "objectID": "index.html#current-progress",
+    "href": "index.html#current-progress",
+    "title": "Penguin Explorer",
+    "section": "Current progress",
+    "text": "Current progress\nThe local labs for Chapters 1 through 4 are complete:\n\nR and Python use project-specific environments with recorded dependencies.\nThe EDA and model reports read a shared DuckDB database.\nA saved model is served through a local Vetiver prediction API.\nA Shiny interface requests predictions and logs successes, diagnostic details, and request failures.\n\nUse the navigation to explore the R EDA and Python model reports. The interactive prediction interface requires the separate Shiny and API servers to be running; startup commands and project progress are documented in the repository README.\nRebuilding and publishing this Quarto website through GitHub Actions is the next chapter’s task."
+  },
+  {
+    "objectID": "eda.html",
+    "href": "eda.html",
+    "title": "Exploratory Data Analysis",
+    "section": "",
+    "text": "The dataset contains 344 penguins from three species observed between 2007 and 2009. Most measurement variables have two missing values, while sex has 11; this missingness should be considered before modeling or comparing groups.\n\n\nCode\ndf |&gt;\n  dplyr::summarise(across(everything(), ~ sum(is.na(.)))) |&gt;\n  tidyr::pivot_longer(\n    everything(),\n    names_to = \"variable\",\n    values_to = \"missing_values\"\n  )\n\n\n# A tibble: 8 × 2\n  variable          missing_values\n  &lt;chr&gt;                      &lt;int&gt;\n1 species                        0\n2 island                         0\n3 bill_length_mm                 2\n4 bill_depth_mm                  2\n5 flipper_length_mm              2\n6 body_mass_g                    2\n7 sex                           11\n8 year                           0\n\n\nThe plot excludes 2 penguins with missing values for bill length, or body mass.\n\n\nCode\nplot_df |&gt;\n  ggplot2::ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +\n  ggplot2::geom_point() +\n  ggplot2::geom_smooth(method = \"lm\", se = FALSE, formula = \"y ~ x\") +\n  ggplot2::labs(\n    title = \"Penguin Bill Length vs Body Mass\",\n    x = \"Bill Length (mm)\",\n    y = \"Body Mass (g)\",\n    color = \"Species\"\n  ) +\n  ggplot2::theme_minimal()\n\n\n\n\n\n\n\n\n\nAcross all penguins, longer bills are generally associated with greater body mass, but the species form distinct clusters. All three species show positive fitted slopes, with Gentoo’s steepest; the overall pattern partly reflects both within-species association and differences among species."
+  }
+]
