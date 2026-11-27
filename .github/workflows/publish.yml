@@ -11,7 +11,7 @@ jobs:
     permissions:
       contents: write
     env:
-      PENGUIN_MODEL_BOARD: ${{ runner.temp }}/penguin-model
+      PENGUIN_MODEL_BOARD: .ci-artifacts/model
 
     steps:
       - name: Check out source
