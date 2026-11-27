@@ -1,6 +1,10 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - index.qmd
+    - eda.qmd
+    - model.qmd
 
 website:
   title: "Penguin Explorer"

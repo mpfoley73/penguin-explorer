@@ -6,6 +6,8 @@ format:
 ---
 
 ```{python}
+import os
+
 import duckdb
 import pandas as pd
 from pins import board_folder
@@ -73,7 +75,10 @@ print(v.prototype)
 Store and version the model on a pins board. The board can use a local folder, Posit Connect, Amazon S3, and more. Writing the vetiver model to the board stores the binary model object and metadata like packages needed for prediction and the model’s input data prototype for checking new data.
 
 ```{python}
-model_folder = "C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model"
+model_folder = os.getenv(
+    "PENGUIN_MODEL_BOARD",
+    "C:/Users/mpfol/OneDrive/Documents/penguin-artifacts/model",
+)
 model_board = board_folder(model_folder, allow_pickle_read=True)
 vetiver_pin_write(model_board, v)
 ```
